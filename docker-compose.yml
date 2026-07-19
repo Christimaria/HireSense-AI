@@ -11,24 +11,23 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - ENVIRONMENT=development
-    volumes:
-      - ./backend:/app   # Hot reload in dev
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - ENVIRONMENT=production
+      - PORT=8000
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
       retries: 3
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000/api/v1
     container_name: hiresense_frontend
     ports:
       - "3000:80"
     depends_on:
-      - backend
-    environment:
-      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+      backend:
+        condition: service_healthy

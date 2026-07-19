@@ -1,0 +1,3 @@
+"""
+HireSense AI — Services Package
+"""

@@ -1,24 +1,35 @@
 """
 HireSense AI — Application Configuration
-Reads from environment variables / .env file.
+
+Reads all settings from environment variables / .env file.
+The singleton is cached via @lru_cache so the file is parsed exactly once.
 """
 
-from pydantic_settings import BaseSettings
-from pydantic import Field
 from functools import lru_cache
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # ── Server ───────────────────────────────────────────────────────────────
+    # ── Google AI / Gemini ────────────────────────────────────────────────────
+    gemini_api_key: str = Field(..., description="Google AI Studio API key")
+    gemini_model: str = Field(
+        default="gemini-2.5-flash",
+        description="Gemini model name (e.g. gemini-2.5-flash, gemini-2.5-pro)",
+    )
+
+    # ── Server ────────────────────────────────────────────────────────────────
     environment: str = Field(default="development")
     port: int = Field(default=8000)
 
-    # ── CORS ─────────────────────────────────────────────────────────────────
+    # ── CORS ──────────────────────────────────────────────────────────────────
     allowed_origins: str = Field(
         default="http://localhost:3000,http://localhost:5173",
         description="Comma-separated list of allowed CORS origins",
     )
 
+    # ── Computed properties ───────────────────────────────────────────────────
     @property
     def allowed_origins_list(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
@@ -27,10 +38,14 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         return self.environment.lower() == "production"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 @lru_cache
 def get_settings() -> Settings:
-    """Cached settings singleton — call get_settings() anywhere in the app."""
+    """Cached settings singleton — import and call get_settings() anywhere."""
     return Settings()

@@ -1,0 +1,3 @@
+"""
+HireSense AI — Prompts Package
+"""

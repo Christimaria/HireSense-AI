@@ -1,0 +1,3 @@
+"""
+HireSense AI — Models Package
+"""
