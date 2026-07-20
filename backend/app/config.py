@@ -7,7 +7,7 @@ The singleton is cached via @lru_cache so the file is parsed exactly once.
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +18,20 @@ class Settings(BaseSettings):
         default="gemini-2.5-flash-lite",
         description="Gemini model name (e.g. gemini-2.5-flash-lite, gemini-2.5-flash, gemini-2.5-pro)",
     )
+
+    @field_validator("gemini_model", mode="before")
+    @classmethod
+    def sanitize_gemini_model(cls, v: str | None) -> str:
+        if not v or not isinstance(v, str):
+            return "gemini-2.5-flash-lite"
+        val = v.strip()
+        if val.startswith("models/"):
+            val = val[7:]
+        # Automatically fallback invalid or deprecated model strings from legacy env vars
+        invalid_models = {"gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.0-flash", "gemini-1.0-pro"}
+        if val.lower() in invalid_models:
+            return "gemini-2.5-flash-lite"
+        return val
 
     # ── Server ────────────────────────────────────────────────────────────────
     environment: str = Field(default="development")
@@ -32,7 +46,14 @@ class Settings(BaseSettings):
     # ── Computed properties ───────────────────────────────────────────────────
     @property
     def allowed_origins_list(self) -> list[str]:
-        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+        if self.allowed_origins.strip() == "*":
+            return ["*"]
+        origins = []
+        for o in self.allowed_origins.split(","):
+            cleaned = o.strip().rstrip("/")
+            if cleaned:
+                origins.append(cleaned)
+        return origins or ["*"]
 
     @property
     def is_production(self) -> bool:

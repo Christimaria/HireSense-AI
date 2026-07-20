@@ -3,7 +3,10 @@ HireSense AI — SSE (Server-Sent Events) Utility Helpers
 """
 
 import json
+import logging
 from typing import Any, AsyncGenerator
+
+logger = logging.getLogger(__name__)
 
 
 def sse_event(data: Any, event_type: str = "chunk") -> str:
@@ -49,6 +52,25 @@ async def stream_text_chunks(
         yield sse_done()
 
 
+
+
+
+def _clean_json_text(text: str) -> str:
+    """Safely strip markdown code block fences without stripping trailing text characters."""
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        first_newline = cleaned.find("\n")
+        if first_newline != -1:
+            cleaned = cleaned[first_newline + 1:]
+        else:
+            cleaned = cleaned.lstrip("`")
+            if cleaned.lower().startswith("json"):
+                cleaned = cleaned[4:]
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3]
+    return cleaned.strip()
+
+
 async def stream_json_object(
     generator: AsyncGenerator[str, None],
 ) -> AsyncGenerator[str, None]:
@@ -73,13 +95,17 @@ async def stream_json_object(
             parsed = json.loads(full_text)
             yield sse_event(parsed, event_type="result")
         except json.JSONDecodeError:
-            # If the LLM returned markdown-wrapped JSON, strip it
-            cleaned = full_text.strip().strip("```json").strip("```").strip()
-            parsed = json.loads(cleaned)
-            yield sse_event(parsed, event_type="result")
+            try:
+                cleaned = _clean_json_text(full_text)
+                parsed = json.loads(cleaned)
+                yield sse_event(parsed, event_type="result")
+            except Exception as parse_exc:
+                logger.error("Failed to parse JSON response from Gemini: %s | raw_text: %r", parse_exc, full_text)
+                yield sse_error(f"Failed to parse response format: {parse_exc}")
 
         yield sse_done()
 
     except Exception as exc:
+        logger.error("SSE stream_json_object error: %s", exc, exc_info=True)
         yield sse_error(str(exc))
         yield sse_done()

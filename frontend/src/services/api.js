@@ -5,9 +5,24 @@
  * Handles Server-Sent Events (SSE) streaming for POST requests.
  */
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  'https://hiresense-ai-backend-ndq3.onrender.com/api/v1';
+function getNormalizedApiBaseUrl() {
+  let url = (
+    import.meta.env.VITE_API_URL ||
+    'https://hiresense-ai-backend-ndq3.onrender.com/api/v1'
+  ).trim();
+  
+  // Remove trailing slashes
+  url = url.replace(/\/+$/, '');
+  
+  // If the provided base URL does not include /api/v1, append it
+  if (!url.endsWith('/api/v1')) {
+    url = `${url}/api/v1`;
+  }
+  
+  return url;
+}
+
+const API_BASE_URL = getNormalizedApiBaseUrl();
 
 /**
  * Core helper to consume POST SSE streams.
