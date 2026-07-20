@@ -80,6 +80,14 @@ def _json_config(system_prompt: str, temperature: float, max_tokens: int) -> typ
     )
 
 
+_FALLBACK_MODEL = "gemini-1.5-flash"
+
+
+def _is_model_unavailable_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return "not_found" in msg or "404" in msg or "no longer available" in msg
+
+
 def _log_available_models_on_error(target_model: str, exc: Exception) -> None:
     """Helper to query and log all available models when a Gemini API call fails."""
     try:
@@ -132,6 +140,24 @@ async def stream_text(
             return  # success — exit retry loop
 
         except Exception as exc:
+            if _is_model_unavailable_error(exc) and target_model != _FALLBACK_MODEL:
+                logger.warning(
+                    "Model %r returned unavailable error (%s). Falling back to %r",
+                    target_model, exc, _FALLBACK_MODEL,
+                )
+                try:
+                    async for chunk in await client.aio.models.generate_content_stream(
+                        model=_FALLBACK_MODEL,
+                        contents=user_prompt,
+                        config=config,
+                    ):
+                        if chunk.text:
+                            yield chunk.text
+                    return
+                except Exception as fallback_exc:
+                    _log_available_models_on_error(_FALLBACK_MODEL, fallback_exc)
+                    raise fallback_exc
+
             if attempt == _MAX_RETRIES or not _is_retryable(exc):
                 _log_available_models_on_error(target_model, exc)
                 raise
@@ -172,6 +198,24 @@ async def stream_json(
             return
 
         except Exception as exc:
+            if _is_model_unavailable_error(exc) and target_model != _FALLBACK_MODEL:
+                logger.warning(
+                    "Model %r returned unavailable error (%s). Falling back to %r",
+                    target_model, exc, _FALLBACK_MODEL,
+                )
+                try:
+                    async for chunk in await client.aio.models.generate_content_stream(
+                        model=_FALLBACK_MODEL,
+                        contents=user_prompt,
+                        config=config,
+                    ):
+                        if chunk.text:
+                            yield chunk.text
+                    return
+                except Exception as fallback_exc:
+                    _log_available_models_on_error(_FALLBACK_MODEL, fallback_exc)
+                    raise fallback_exc
+
             if attempt == _MAX_RETRIES or not _is_retryable(exc):
                 _log_available_models_on_error(target_model, exc)
                 raise
@@ -207,5 +251,13 @@ async def complete(
         )
         return response.text or ""
     except Exception as exc:
+        if _is_model_unavailable_error(exc) and target_model != _FALLBACK_MODEL:
+            logger.warning("Model %r failed (%s). Falling back to %r", target_model, exc, _FALLBACK_MODEL)
+            response = await client.aio.models.generate_content(
+                model=_FALLBACK_MODEL,
+                contents=user_prompt,
+                config=config,
+            )
+            return response.text or ""
         _log_available_models_on_error(target_model, exc)
         raise
