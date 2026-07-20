@@ -23,7 +23,7 @@ HireSense AI is a full-stack, AI-native career preparation platform designed to 
                                                              │
                                                              ▼
                                                     [ Google Gemini API ]
-                                                     (gemini-2.5-flash)
+                                                     (gemini-1.5-flash)
 ```
 
 ### Technology Stack Specifications
@@ -34,52 +34,160 @@ HireSense AI is a full-stack, AI-native career preparation platform designed to 
 | **Styling & Icons** | Tailwind CSS v3, Lucide React | Glassmorphic dark mode, micro-animations, accessible UI tokens |
 | **Backend Framework** | Python 3.11, FastAPI, Pydantic v2 | API routing, request validation, CORS middleware, SSE streaming |
 | **AI Integration** | `google-genai` (v2.12.1 SDK) | Communication with Gemini models, `generate_content_stream` |
-| **LLM Model** | Google Gemini `gemini-2.5-flash` | Multimodal text & JSON generation, structured evaluation |
+| **LLM Model** | Google Gemini `gemini-1.5-flash` | Multimodal text & JSON generation, structured evaluation |
 | **Containerization** | Docker, Docker Compose | Multistage Docker build for backend container |
 | **Deployment** | Vercel (Frontend), Render (Backend) | Global static site & cloud web service hosting |
 
 ---
 
-## 2. Prompting Strategy & Prompt Engineering
+## 2. Prompting Strategy & Prompt Engineering Documentation
 
-HireSense AI utilizes **Role-Task-Constraint (RTC)** and **Structured JSON Schema Output** prompting patterns to guarantee reliable AI responses.
+HireSense AI implements **Role-Task-Constraint (RTC)** and **Structured JSON Schema Output** prompting patterns across 5 core AI features.
 
-### 1. System Prompt Isolation Pattern
-Every feature defines an immutable system prompt enforcing JSON formatting rules and persona bounds.
+### Feature 1: Mock Interview Question Generation (`interview_prompts.py`)
 
-#### Example: Interview Question Generator Prompt (`interview_prompts.py`)
+#### System Prompt
 ```python
-INTERVIEW_SYSTEM_PROMPT = """
-You are an elite Tech Lead and Hiring Manager conducting a professional technical mock interview.
-Your goal is to generate single, hyper-relevant, scenario-based interview questions tailored to the candidate's target role and experience level.
+INTERVIEW_SYSTEM_PROMPT = """You are a professional technical interviewer at a top technology company.
+Your job is to conduct realistic, challenging, and fair mock interviews.
 
-Rules:
-1. Return ONLY the interview question.
-2. Adapt difficulty strictly to the experience level.
-3. Keep questions clear, professional, and practical.
+RULES:
+- Ask ONE question at a time. Never ask multiple questions in a single response.
+- Questions must be relevant to the role, experience level, and interview type.
+- Do NOT repeat questions that have already been asked in this session.
+- Progress naturally: start easier, build complexity as the session continues.
+- For behavioral questions, set up scenarios clearly.
+- For technical questions, be specific — avoid vague or generic questions.
+- Return ONLY the question text. No greetings, no prefixes like "Question 3:", no explanations.
 """
 ```
 
-#### Example: Answer Evaluation Prompt (`evaluation_prompts.py`)
+#### User Prompt Template Builder
+```python
+def build_question_prompt(role, experience_level, interview_type, question_number, total_questions, conversation_history):
+    return f"""
+Interview Configuration:
+- Role: {role}
+- Experience Level: {experience_level}
+- Interview Type: {interview_type}
+- Question: {question_number} of {total_questions}
+
+Previous conversation history:
+{history_text}
+
+Now generate question #{question_number}. Return ONLY the question text.
+"""
+```
+
+---
+
+### Feature 2: Candidate Answer Evaluation & Grading (`evaluation_prompts.py`)
+
+#### System Prompt
 ```python
 EVALUATION_SYSTEM_PROMPT = """
-You are an expert technical interviewer and hiring manager.
-Grade candidate answers objectively against industry standards.
+You are an expert technical recruiter and senior engineering manager with 15+ years of experience.
+Your task is to review a candidate's answer, grade it constructively and strictly, and provide actionable advice.
 
-IMPORTANT: Return ONLY a raw JSON object matching this schema:
-{
-  "score": <integer 0-100>,
-  "strengths": [<string>],
-  "weaknesses": [<string>],
-  "improved_answer": "<string>",
-  "key_takeaway": "<string>"
-}
+RULES:
+- Be realistic and fair. Do not inflate scores.
+- High scores (8.5+) require technical accuracy, clarity, and context-appropriate detail.
+- Grading must scale according to the candidate's Experience Level.
+- Return ONLY a single JSON object matching the requested schema.
 """
 ```
 
-### Key Prompt Engineering Innovations
-1. **Dynamic Few-Shot History Injection:** Conversation turns are formatted into context arrays so Gemini understands prior interview questions.
-2. **Schema Enforcement:** `response_mime_type="application/json"` is combined with markdown-stripping fallback parsers in the backend SSE utility (`sse.py`).
+#### User Prompt Template Builder
+```python
+def build_evaluation_prompt(question, answer, role, experience_level, interview_type):
+    return f"""
+Question Asked: "{question}"
+Candidate's Answer: "{answer}"
+
+Evaluate the candidate's answer and return exactly this JSON structure:
+{{
+  "score": <float between 0.0 and 10.0>,
+  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
+  "weaknesses": ["<weakness 1>", "<weakness 2>", "<weakness 3>"],
+  "improved_answer": "<model answer tailored to the role and seniority>",
+  "tips": ["<tip 1>", "<tip 2>", "<tip 3>"]
+}}
+"""
+```
+
+---
+
+### Feature 3: Resume ATS Scanner & Reviewer (`resume_prompts.py`)
+
+#### System Prompt
+```python
+RESUME_SYSTEM_PROMPT = """
+You are an expert technical recruiter with 15+ years of experience reviewing resumes for top tech companies.
+Your task is to analyse resumes and return structured, honest, actionable feedback.
+
+RULES:
+- Scores use a 0–10 float scale.
+- ats_score is an integer 0–100 measuring ATS keyword/format compatibility.
+- Keep per-section feedback concise (2–3 sentences).
+- Return ONLY a single JSON object.
+"""
+```
+
+#### User Prompt Template Builder
+```python
+def build_resume_review_prompt(resume_text, target_role):
+    return f"""
+Target Role: {target_role}
+
+Analyse the resume below and return exactly this JSON structure:
+{{
+  "overall_score": <float 0-10>,
+  "ats_score": <int 0-100>,
+  "sections": {{
+    "summary": {{"score": <float>, "feedback": "<string>"}},
+    "experience": {{"score": <float>, "feedback": "<string>"}},
+    "skills": {{"score": <float>, "feedback": "<string>"}},
+    "education": {{"score": <float>, "feedback": "<string>"}}
+  }},
+  "strengths": ["<string>", ...],
+  "weaknesses": ["<string>", ...],
+  "recommendations": ["<string>", ...]
+}}
+
+RESUME TEXT:
+{resume_text}
+"""
+```
+
+---
+
+### Feature 4: Career Learning Roadmap Generator (`roadmap_prompts.py`)
+
+#### System Prompt
+```python
+ROADMAP_SYSTEM_PROMPT = """
+You are an expert career coach and senior technical trainer.
+Analyze a candidate's current skills and target role, identify skill gaps, and generate a customized week-by-week learning roadmap.
+
+RULES:
+- Be highly practical with project-based hands-on tasks.
+- Ensure the roadmap fits the requested timeline.
+- Recommend reputable resources (official docs, courses, books).
+- Return ONLY a single JSON object.
+"""
+```
+
+---
+
+### Feature 5: Holistic Performance Dashboard (`dashboard_prompts.py`)
+
+#### System Prompt
+```python
+DASHBOARD_SYSTEM_PROMPT = """
+You are an elite executive recruiter analyzing an entire mock interview transcript.
+Produce a detailed, honest, structured performance dashboard across Technical Depth, Communication Clarity, Problem Solving, and Context Relevance.
+"""
+```
 
 ---
 
@@ -130,7 +238,7 @@ sequenceDiagram
 
     User->>Vercel: Click "Start Mock Interview"
     Vercel->>Render: POST /api/v1/interview/question (JSON payload)
-    Render->>Gemini: generate_content_stream(model="gemini-2.5-flash")
+    Render->>Gemini: generate_content_stream(model="gemini-1.5-flash")
     Gemini-->>Render: Async text chunk stream
     Render-->>Vercel: SSE stream (data: {"type":"chunk", "content":"..."})
     Vercel-->>User: Progressive typing effect animation
@@ -140,9 +248,9 @@ sequenceDiagram
 
 ## 5. Challenges Encountered & Technical Resolutions
 
-### Challenge 1: Model Availability & SDK Selection
+### Challenge 1: Model Selection & Availability
 - **Issue:** Attempting to query invalid or deprecated model strings returned `404 NOT_FOUND: model is no longer available`.
-- **Resolution:** Updated config defaults to `gemini-2.5-flash`, implemented a dynamic validator in `config.py` to sanitize `models/` prefixes, and created a model list diagnostic tool (`client.models.list()`).
+- **Resolution:** Set default model to `gemini-1.5-flash`, implemented an automatic model fallback mechanism in `client.py` that catches 404 model errors and retries with `gemini-1.5-flash`, and created a dynamic model diagnostic tool.
 
 ### Challenge 2: Vite Build-Time Environment Variable Baking on Vercel
 - **Issue:** Changing `VITE_API_URL` in Vercel settings did not take effect because Vite bakes env vars into the static JavaScript bundle at build time.
