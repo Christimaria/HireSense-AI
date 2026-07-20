@@ -3,7 +3,7 @@
 > **Vibe Coding Masterclass Series — Capstone Project Submission**  
 > **Application Name:** HireSense AI — Intelligent Career Readiness & Interview Co-Pilot  
 > **Developer:** Student Submission  
-> **Live Application URL:** https://hiresense-ai.vercel.app  
+> **Live Application URL:** https://hire-sense-ai-delta.vercel.app  
 > **Backend API URL:** https://hiresense-ai-backend-ndq3.onrender.com/api/v1  
 
 ---
