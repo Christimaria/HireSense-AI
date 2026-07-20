@@ -5,11 +5,13 @@
  * Handles Server-Sent Events (SSE) streaming for POST requests.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  'https://hiresense-ai-backend-ndq3.onrender.com/api/v1';
 
 /**
  * Core helper to consume POST SSE streams.
- * 
+ *
  * @param {string} endpoint - API path relative to API_BASE_URL (e.g. '/resume/review')
  * @param {object} payload - JSON request body
  * @param {function} onChunk - Callback for intermediate text chunks
