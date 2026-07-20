@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     # ── Google AI / Gemini ────────────────────────────────────────────────────
     gemini_api_key: str = Field(..., description="Google AI Studio API key")
     gemini_model: str = Field(
-        default="gemini-1.5-flash",
-        description="Gemini model name (e.g. gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash)",
+        default="gemini-2.5-flash",
+        description="Gemini model name (e.g. gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest)",
     )
 
     @field_validator("gemini_model", mode="before")
