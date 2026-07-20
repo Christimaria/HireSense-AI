@@ -1,14 +1,14 @@
 # Project Report: Building & Deploying HireSense AI
 
-**Course/Masterclass:** Vibe Coding — Building & Deploying an AI Web Application  
-**Project Title:** HireSense AI — Intelligent Career Readiness & Interview Co-Pilot  
-**Live Application URL:** https://hiresense-ai.vercel.app  
-**Backend API URL:** https://hiresense-ai-backend-ndq3.onrender.com/api/v1  
-**Repository:** HireSense-AI  
+> **Vibe Coding Masterclass Series — Capstone Project Report**  
+> **Project Title:** HireSense AI — Intelligent Career Readiness & Interview Co-Pilot  
+> **Live Application URL:** https://hiresense-ai.vercel.app  
+> **Backend API URL:** https://hiresense-ai-backend-ndq3.onrender.com/api/v1  
+> **Repository:** https://github.com/Christimaria/HireSense-AI  
 
 ---
 
-## 1. Application Overview & Tech Stack
+## 1. Executive Summary & Tech Stack Specifications
 
 HireSense AI is a full-stack, AI-native career preparation platform designed to help job seekers practice interviews, calibrate resumes for ATS compatibility, and follow custom week-by-week learning roadmaps.
 
@@ -26,17 +26,17 @@ HireSense AI is a full-stack, AI-native career preparation platform designed to 
                                                      (gemini-1.5-flash)
 ```
 
-### Technology Stack Specifications
+### 1.1 Technical Stack Specifications
 
-| Layer | Technology | Key Responsibility |
+| Component Layer | Technology | Primary Role & Responsibility |
 | :--- | :--- | :--- |
-| **Frontend Framework** | React 19, Vite 8, React Router v7 | User interface, state management, SSE chunk parsing, responsive UI |
-| **Styling & Icons** | Tailwind CSS v3, Lucide React | Glassmorphic dark mode, micro-animations, accessible UI tokens |
-| **Backend Framework** | Python 3.11, FastAPI, Pydantic v2 | API routing, request validation, CORS middleware, SSE streaming |
-| **AI Integration** | `google-genai` (v2.12.1 SDK) | Communication with Gemini models, `generate_content_stream` |
+| **Frontend Framework** | React 19, Vite 8, React Router v7 | Responsive UI, state management, SSE chunk parsing |
+| **Styling & UI Components** | Tailwind CSS v3, Lucide React | Glassmorphic dark mode, micro-animations, accessible design tokens |
+| **Backend Framework** | Python 3.11, FastAPI, Pydantic v2 | API routing, input validation, CORS middleware, SSE streaming |
+| **AI Integration SDK** | `google-genai` (v2.12.1 SDK) | Communication with Gemini API via `generate_content_stream` |
 | **LLM Model** | Google Gemini `gemini-1.5-flash` | Multimodal text & JSON generation, structured evaluation |
-| **Containerization** | Docker, Docker Compose | Multistage Docker build for backend container |
-| **Deployment** | Vercel (Frontend), Render (Backend) | Global static site & cloud web service hosting |
+| **Containerization** | Docker, Docker Compose | Multistage Docker build for backend container deployment |
+| **Cloud Deployment** | Vercel (Frontend), Render (Backend) | Global static hosting & cloud web service container hosting |
 
 ---
 
@@ -44,9 +44,11 @@ HireSense AI is a full-stack, AI-native career preparation platform designed to 
 
 HireSense AI implements **Role-Task-Constraint (RTC)** and **Structured JSON Schema Output** prompting patterns across 5 core AI features.
 
-### Feature 1: Mock Interview Question Generation (`interview_prompts.py`)
+---
 
-#### System Prompt
+### Feature 1: Mock Interview Question Generator (`interview_prompts.py`)
+
+#### System Prompt (`INTERVIEW_SYSTEM_PROMPT`)
 ```python
 INTERVIEW_SYSTEM_PROMPT = """You are a professional technical interviewer at a top technology company.
 Your job is to conduct realistic, challenging, and fair mock interviews.
@@ -62,17 +64,38 @@ RULES:
 """
 ```
 
-#### User Prompt Template Builder
+#### User Prompt Template Builder (`build_question_prompt`)
 ```python
-def build_question_prompt(role, experience_level, interview_type, question_number, total_questions, conversation_history):
+def build_question_prompt(
+    role: str,
+    experience_level: str,
+    interview_type: str,
+    question_number: int,
+    total_questions: int,
+    conversation_history: list[dict],
+) -> str:
+    role_ctx = ROLE_CONTEXT.get(role, role)
+    type_ctx = INTERVIEW_TYPE_CONTEXT.get(interview_type, "")
+    exp_ctx = EXPERIENCE_CONTEXT.get(experience_level, experience_level)
+
+    history_text = ""
+    if conversation_history:
+        history_lines = []
+        for turn in conversation_history:
+            history_lines.append(f"Q: {turn['question']}")
+            history_lines.append(f"A: {turn['answer'][:300]}...")
+        history_text = "\n".join(history_lines)
+
     return f"""
 Interview Configuration:
 - Role: {role}
-- Experience Level: {experience_level}
+- Experience Level: {experience_level} ({exp_ctx})
 - Interview Type: {interview_type}
 - Question: {question_number} of {total_questions}
+- Key Topics: {role_ctx}
+- Style Guidance: {type_ctx}
 
-Previous conversation history:
+{"Previous conversation history:" if history_text else "This is the FIRST question of the session."}
 {history_text}
 
 Now generate question #{question_number}. Return ONLY the question text.
@@ -83,35 +106,44 @@ Now generate question #{question_number}. Return ONLY the question text.
 
 ### Feature 2: Candidate Answer Evaluation & Grading (`evaluation_prompts.py`)
 
-#### System Prompt
+#### System Prompt (`EVALUATION_SYSTEM_PROMPT`)
 ```python
-EVALUATION_SYSTEM_PROMPT = """
-You are an expert technical recruiter and senior engineering manager with 15+ years of experience.
-Your task is to review a candidate's answer, grade it constructively and strictly, and provide actionable advice.
+EVALUATION_SYSTEM_PROMPT = """\
+You are an expert technical recruiter, senior engineering manager, and career coach with 15+ years of experience.
+Your task is to review a candidate's answer to an interview question, grade it constructively and strictly, and provide actionable advice.
 
 RULES:
 - Be realistic and fair. Do not inflate scores.
 - High scores (8.5+) require technical accuracy, clarity, and context-appropriate detail.
+- Low scores (<5.0) are appropriate for major technical gaps, misunderstandings, or excessive vagueness.
 - Grading must scale according to the candidate's Experience Level.
 - Return ONLY a single JSON object matching the requested schema.
 """
 ```
 
-#### User Prompt Template Builder
+#### User Prompt Template Builder (`build_evaluation_prompt`)
 ```python
-def build_evaluation_prompt(question, answer, role, experience_level, interview_type):
-    return f"""
-Question Asked: "{question}"
-Candidate's Answer: "{answer}"
+def build_evaluation_prompt(question, answer, role, experience_level, interview_type) -> str:
+    return f"""\
+Interview Context:
+- Role: {role} | Experience Level: {experience_level} | Interview Type: {interview_type}
+
+Question Asked:
+"{question}"
+
+Candidate's Answer:
+"{answer}"
 
 Evaluate the candidate's answer and return exactly this JSON structure:
 {{
-  "score": <float between 0.0 and 10.0>,
+  "score": <float between 0.0 and 10.0 representing the quality of the answer>,
   "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
   "weaknesses": ["<weakness 1>", "<weakness 2>", "<weakness 3>"],
-  "improved_answer": "<model answer tailored to the role and seniority>",
+  "improved_answer": "<a model answer tailored to the role and experience level>",
   "tips": ["<tip 1>", "<tip 2>", "<tip 3>"]
 }}
+
+Return ONLY the JSON object. No markdown fences, no extra text.
 """
 ```
 
@@ -119,13 +151,14 @@ Evaluate the candidate's answer and return exactly this JSON structure:
 
 ### Feature 3: Resume ATS Scanner & Reviewer (`resume_prompts.py`)
 
-#### System Prompt
+#### System Prompt (`RESUME_SYSTEM_PROMPT`)
 ```python
-RESUME_SYSTEM_PROMPT = """
-You are an expert technical recruiter with 15+ years of experience reviewing resumes for top tech companies.
+RESUME_SYSTEM_PROMPT = """\
+You are an expert technical recruiter and career coach with 15+ years of experience reviewing resumes for top tech companies.
 Your task is to analyse resumes and return structured, honest, actionable feedback.
 
 RULES:
+- Be candid but constructive. Do not inflate scores.
 - Scores use a 0–10 float scale.
 - ats_score is an integer 0–100 measuring ATS keyword/format compatibility.
 - Keep per-section feedback concise (2–3 sentences).
@@ -133,29 +166,32 @@ RULES:
 """
 ```
 
-#### User Prompt Template Builder
+#### User Prompt Template Builder (`build_resume_review_prompt`)
 ```python
-def build_resume_review_prompt(resume_text, target_role):
-    return f"""
-Target Role: {target_role}
+def build_resume_review_prompt(resume_text: str, target_role: str | None) -> str:
+    return f"""\
+Target Role: {target_role or "General Merit"}
 
 Analyse the resume below and return exactly this JSON structure:
+
 {{
   "overall_score": <float 0-10>,
   "ats_score": <int 0-100>,
   "sections": {{
-    "summary": {{"score": <float>, "feedback": "<string>"}},
+    "summary":    {{"score": <float>, "feedback": "<string>"}},
     "experience": {{"score": <float>, "feedback": "<string>"}},
-    "skills": {{"score": <float>, "feedback": "<string>"}},
-    "education": {{"score": <float>, "feedback": "<string>"}}
+    "skills":     {{"score": <float>, "feedback": "<string>"}},
+    "education":  {{"score": <float>, "feedback": "<string>"}}
   }},
-  "strengths": ["<string>", ...],
-  "weaknesses": ["<string>", ...],
+  "strengths":       ["<string>", ...],
+  "weaknesses":      ["<string>", ...],
   "recommendations": ["<string>", ...]
 }}
 
 RESUME TEXT:
 {resume_text}
+
+Return ONLY the JSON object.
 """
 ```
 
@@ -163,17 +199,32 @@ RESUME TEXT:
 
 ### Feature 4: Career Learning Roadmap Generator (`roadmap_prompts.py`)
 
-#### System Prompt
+#### System Prompt (`ROADMAP_SYSTEM_PROMPT`)
 ```python
-ROADMAP_SYSTEM_PROMPT = """
+ROADMAP_SYSTEM_PROMPT = """\
 You are an expert career coach and senior technical trainer.
-Analyze a candidate's current skills and target role, identify skill gaps, and generate a customized week-by-week learning roadmap.
+Analyze a candidate's current skills and target role, identify core skill gaps, and generate a customized week-by-week learning roadmap for the specified timeline.
 
 RULES:
-- Be highly practical with project-based hands-on tasks.
+- Be highly practical. Focus on project-based learning and hands-on milestones.
 - Ensure the roadmap fits the requested timeline.
 - Recommend reputable resources (official docs, courses, books).
-- Return ONLY a single JSON object.
+- Return ONLY a single JSON object matching the requested structure.
+"""
+```
+
+#### User Prompt Template Builder (`build_roadmap_prompt`)
+```python
+def build_roadmap_prompt(current_skills: list[str], target_role: str, timeline: str) -> str:
+    skills_list = ", ".join(current_skills)
+    return f"""\
+Candidate Context:
+- Current Skills: {skills_list}
+- Target Role: {target_role}
+- Timeline: {timeline}
+
+Generate a detailed, week-by-week roadmap to bridge these skill gaps within the {timeline} timeframe.
+Return ONLY the JSON object.
 """
 ```
 
@@ -181,11 +232,16 @@ RULES:
 
 ### Feature 5: Holistic Performance Dashboard (`dashboard_prompts.py`)
 
-#### System Prompt
+#### System Prompt (`DASHBOARD_SYSTEM_PROMPT`)
 ```python
-DASHBOARD_SYSTEM_PROMPT = """
-You are an elite executive recruiter analyzing an entire mock interview transcript.
-Produce a detailed, honest, structured performance dashboard across Technical Depth, Communication Clarity, Problem Solving, and Context Relevance.
+DASHBOARD_SYSTEM_PROMPT = """\
+You are an elite executive recruiter and technical interviewer with 15+ years of experience conducting performance assessments.
+Your task is to analyze an entire mock interview transcript and produce a detailed, honest, structured performance dashboard.
+
+RULES:
+- Evaluate the candidate holistically across Technical Depth, Communication Clarity, Problem Solving, and Context Relevance.
+- Provide a grade (e.g. A, B+, B, C-, F) matching typical industry standards.
+- Return ONLY a single JSON object matching the requested structure.
 """
 ```
 
@@ -193,77 +249,48 @@ Produce a detailed, honest, structured performance dashboard across Technical De
 
 ## 3. Phase-by-Phase Development Summary (Vibe Coding Methodology)
 
-```mermaid
-graph TD
-    A[Phase 1: Concept & Architecture] --> B[Phase 2: Backend API & AI Integration]
-    B --> C[Phase 3: Frontend UI & SSE Streaming]
-    C --> D[Phase 4: Docker Containerization]
-    D --> E[Phase 5: Cloud Deployment & Audit]
-```
+### Phase 1: Architecture & API Schema Definition
+* Specified 5 core feature endpoints (`/interview/question`, `/evaluation/answer`, `/evaluation/dashboard`, `/resume/review`, `/roadmap/generate`).
+* Created Pydantic models for request validation and response typing.
 
-### Phase 1: Planning & System Specification
-- Defined 5 core endpoints: `/interview/question`, `/evaluation/answer`, `/evaluation/dashboard`, `/resume/review`, `/roadmap/generate`.
-- Established Pydantic schema validation for request payloads and response bodies.
+### Phase 2: Backend Core & Gemini Integration
+* Implemented FastAPI application factory in `app/main.py`.
+* Configured `google-genai` SDK with async streaming generators in `app/ai/client.py`.
+* Built custom Server-Sent Events (SSE) helpers (`stream_text_chunks` and `stream_json_object`) in `app/utils/sse.py`.
 
-### Phase 2: Backend Foundation & Gemini SDK Integration
-- Built FastAPI application factory in `app/main.py`.
-- Integrated `google-genai` SDK with async streaming helpers in `app/ai/client.py`.
-- Implemented Server-Sent Events (SSE) stream wrappers (`stream_text_chunks` and `stream_json_object`) in `app/utils/sse.py`.
-
-### Phase 3: Frontend Interface Development
-- Created responsive dark-mode layout with Tailwind CSS.
-- Developed SSE reader (`streamPost`) using browser `fetch` and `TextDecoder`.
-- Integrated real-time typing animations for streaming responses.
+### Phase 3: Frontend Interface & SSE Stream Reader
+* Designed responsive glassmorphic UI using React 19 and Tailwind CSS.
+* Developed `streamPost` helper utilizing browser `fetch` and `TextDecoder` streams to render progressive typing animations.
 
 ### Phase 4: Containerization
-- Authored multi-stage `Dockerfile` with Python 3.11 slim base.
-- Configured non-root execution and environment variable passthroughs.
+* Authored multi-stage `Dockerfile` with Python 3.11 slim base image.
+* Configured dependency caching and Uvicorn production entrypoint.
 
-### Phase 5: Cloud Deployment & Security Audit
-- Deployed FastAPI Docker image to Render.
-- Deployed React Vite build to Vercel.
-- Conducted full CORS, URL path normalization, and Gemini model availability audit.
-
----
-
-## 4. Application Architecture & Data Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Candidate (Browser)
-    participant Vercel as Vercel Frontend (React)
-    participant Render as Render Backend (FastAPI)
-    participant Gemini as Google Gemini API
-
-    User->>Vercel: Click "Start Mock Interview"
-    Vercel->>Render: POST /api/v1/interview/question (JSON payload)
-    Render->>Gemini: generate_content_stream(model="gemini-1.5-flash")
-    Gemini-->>Render: Async text chunk stream
-    Render-->>Vercel: SSE stream (data: {"type":"chunk", "content":"..."})
-    Vercel-->>User: Progressive typing effect animation
-```
+### Phase 5: Deployment & Verification Audit
+* Deployed FastAPI backend container to Render.
+* Deployed React static bundle to Vercel.
+* Resolved CORS, API URL normalization, and Gemini model fallback routing.
 
 ---
 
-## 5. Challenges Encountered & Technical Resolutions
+## 4. Technical Challenges & Resolutions
 
-### Challenge 1: Model Selection & Availability
-- **Issue:** Attempting to query invalid or deprecated model strings returned `404 NOT_FOUND: model is no longer available`.
-- **Resolution:** Set default model to `gemini-1.5-flash`, implemented an automatic model fallback mechanism in `client.py` that catches 404 model errors and retries with `gemini-1.5-flash`, and created a dynamic model diagnostic tool.
+### Challenge 1: Gemini Model Availability & Fallback Routing
+* **Issue:** Requesting restricted or deprecated model names returned `404 NOT_FOUND: model is no longer available`.
+* **Resolution:** Configured application default to `gemini-1.5-flash` and added automatic fallback handling in `client.py` to seamlessly retry with `gemini-1.5-flash` if any model returns 404.
 
-### Challenge 2: Vite Build-Time Environment Variable Baking on Vercel
-- **Issue:** Changing `VITE_API_URL` in Vercel settings did not take effect because Vite bakes env vars into the static JavaScript bundle at build time.
-- **Resolution:** Added URL normalization logic in `frontend/src/services/api.js` (`getNormalizedApiBaseUrl()`) to clean trailing slashes and ensure `/api/v1` pathing, then triggered a Vercel build with cache disabled.
+### Challenge 2: Vite Build-Time Environment Variable Baking
+* **Issue:** Updating `VITE_API_URL` on Vercel did not take effect immediately due to build-time bundle compilation.
+* **Resolution:** Implemented `getNormalizedApiBaseUrl()` in `api.js` to handle trailing slashes and missing `/api/v1` suffixes, followed by a cache-cleared Vercel redeployment.
 
 ### Challenge 3: JSON Decoding Corruption in SSE Streams
-- **Issue:** Using `str.strip("```json")` in Python character-stripped valid trailing letters (`j`, `s`, `o`, `n`) from JSON outputs, causing `JSONDecodeError`.
-- **Resolution:** Refactored `sse.py` with `_clean_json_text()` using explicit index slicing for markdown fences.
+* **Issue:** Python `str.strip("```json")` character-stripped valid trailing letters (`j`, `s`, `o`, `n`) from JSON strings, causing parse errors.
+* **Resolution:** Refactored `sse.py` with `_clean_json_text()` using index-based newline slicing for markdown code fences.
 
 ---
 
-## 6. Key Learnings & Reflection
+## 5. Key Learnings & Reflection
 
-1. **Vibe Coding Efficiency:** Leveraging AI as a pair programmer allowed rapid iteration across backend schemas, prompts, and frontend visual polish.
-2. **Streaming UX Matters:** Real-time SSE token streaming dramatically improves perceived performance over traditional blocking API requests.
-3. **Decoupled Architecture Resilience:** Separating client-side React code from server-side FastAPI logic ensured 100% API key security while allowing independent deployment on Render and Vercel.
+1. **Vibe Coding Acceleration:** Pairing with AI tools enabled full-stack development, prompt engineering, and cloud deployment in record time.
+2. **Streaming User Experience:** Progressive SSE token rendering provides superior user engagement compared to slow, blocking HTTP requests.
+3. **Decoupled Architecture Benefits:** Separating React on Vercel from FastAPI on Render ensured complete API key protection while keeping the system modular and scalable.

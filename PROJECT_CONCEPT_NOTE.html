@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Concept Note - HireSense AI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    @page {
+      size: A4;
+      margin: 18mm 15mm 18mm 15mm;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1e293b;
+      line-height: 1.6;
+      font-size: 12.5px;
+      padding: 0;
+      background: #ffffff;
+    }
+    
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 2.5px solid #2563eb;
+      padding-bottom: 8px;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    
+    h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 5px;
+      margin-top: 22px;
+      margin-bottom: 12px;
+      page-break-after: avoid;
+    }
+    
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      page-break-after: avoid;
+    }
+
+    h4 {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      page-break-after: avoid;
+    }
+    
+    p {
+      margin-bottom: 10px;
+    }
+    
+    strong {
+      color: #0f172a;
+    }
+    
+    .callout {
+      background-color: #f0f9ff;
+      border-left: 4px solid #0284c7;
+      padding: 10px 14px;
+      margin: 12px 0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #0369a1;
+    }
+
+    .callout p {
+      margin: 0;
+      padding: 2px 0;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background-color: #f1f5f9;
+      color: #1d4ed8;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .code-container {
+      margin: 12px 0;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      page-break-inside: avoid;
+    }
+
+    .code-lang {
+      background-color: #1e293b;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 4px 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #334155;
+    }
+
+    pre {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 12px 14px;
+      margin: 0;
+      overflow-x: auto;
+    }
+    
+    pre code {
+      background-color: transparent;
+      color: #f8fafc;
+      padding: 0;
+      border: none;
+      font-size: 10.5px;
+      line-height: 1.5;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 11.5px;
+      page-break-inside: avoid;
+    }
+    
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    
+    th {
+      background-color: #f1f5f9;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    
+    hr {
+      border: 0;
+      height: 1px;
+      background: #cbd5e1;
+      margin: 18px 0;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    ul, ol {
+      padding-left: 18px;
+      margin-bottom: 10px;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Project Concept Note: HireSense AI</h1><blockquote class="callout"><strong>Vibe Coding Masterclass Series — Capstone Project Submission</strong>  </blockquote>
+<blockquote class="callout"><strong>Application Name:</strong> HireSense AI — Intelligent Career Readiness & Interview Co-Pilot  </blockquote>
+<blockquote class="callout"><strong>Developer:</strong> Student Submission  </blockquote>
+<blockquote class="callout"><strong>Live Application URL:</strong> https://hiresense-ai.vercel.app  </blockquote>
+<blockquote class="callout"><strong>Backend API URL:</strong> https://hiresense-ai-backend-ndq3.onrender.com/api/v1  </blockquote><hr/><h2>1. Executive Summary & Problem Statement</h2><h3>1.1 The Challenge</h3>
+Preparing for technical and HR job interviews is often stressful, fragmented, and lacks real-time, objective feedback. Job candidates consistently encounter three major barriers:
+<ul>
+<li><strong>Unrealistic Practice:</strong> Static interview prep lists do not simulate dynamic, multi-turn technical conversations.</li>
+<li><strong>ATS Resume Rejection:</strong> Resumes are frequently filtered out by Automated Tracking Systems (ATS) due to formatting mismatches or missing role-specific keywords.</li>
+<li><strong>Unstructured Learning Paths:</strong> Candidates lack personalized, week-by-week actionable roadmaps tailored to their specific skill gaps and targeted roles.</li>
+</ul><h3>1.2 The Solution</h3>
+<strong>HireSense AI</strong> is an end-to-end, next-generation career readiness co-pilot powered by <strong>Google Gemini AI</strong> (<code>gemini-1.5-flash</code>). It provides:
+1. <strong>Real-time AI Mock Interviews:</strong> Multi-turn practice with progressive token streaming.
+2. <strong>ATS Resume Calibration:</strong> Section-by-section auditing and keyword matching.
+3. <strong>Holistic Performance Dashboards:</strong> Multi-category scoring across Technical Depth, Communication, and Problem Solving.
+4. <strong>Custom Weekly Roadmaps:</strong> Actionable skill-gap learning pathways tailored to candidate timelines.<hr/><h2>2. Target Audience & Primary Use Cases</h2><table><thead><tr><th>Target Audience</th><th>Primary Use Case</th><th>Key Benefit Received</th></tr></thead><tbody><tr><td><strong>Students & Fresh Graduates</strong></td><td>Preparing for entry-level tech & HR interviews</td><td>Instant mock practice without needing human interviewers</td></tr><tr><td><strong>Experienced Engineers</strong></td><td>Transitioning into Senior/Lead/Specialized roles</td><td>Deep technical metric evaluation and targeted trade-off analysis</td></tr><tr><td><strong>Career Switchers</strong></td><td>Up-skilling for software engineering / data roles</td><td>Customized week-by-week learning pathway with project milestones</td></tr></tbody></table><hr/><h2>3. LLM Model & API Architecture</h2><ul>
+<li><strong>AI SDK:</strong> Official <code>google-genai</code> Python SDK (<code>v2.12.1</code>)</li>
+<li><strong>Primary LLM Model:</strong> Google Gemini <code>gemini-1.5-flash</code></li>
+<li><strong>Streaming Transport:</strong> Server-Sent Events (SSE) streaming via FastAPI <code>StreamingResponse</code></li>
+<li><strong>Security & Privacy Guarantee:</strong> Zero client-side API key exposure; all credentials stored in server environment variables; zero persistent storage of candidate resumes.</li>
+</ul><hr/><h2>4. Key Application Features</h2><h3>Feature 1: Interactive AI Mock Interview Suite</h3>
+<ul>
+<li>Dynamic role, experience level, and interview type selection (Technical, Behavioral, HR).</li>
+<li>Multi-turn conversation tracking with real-time SSE token streaming for progressive typing animations.</li>
+</ul><h3>Feature 2: Live Answer Evaluation & Grading</h3>
+<ul>
+<li>Detailed feedback per question: Score (0.0–10.0), key strengths, identified gaps, and rewritten "Gold Standard" answers.</li>
+</ul><h3>Feature 3: Holistic Performance Dashboard</h3>
+<ul>
+<li>Session-wide analytics across Technical Depth, Communication Clarity, and Problem Solving.</li>
+<li>Overall readiness grade (e.g. "Industry Ready", "Needs Practice") with actionable next steps.</li>
+</ul><h3>Feature 4: Resume ATS Scanner & Calibrator</h3>
+<ul>
+<li>Instant plain-text resume auditing against targeted job titles.</li>
+<li>Section scores, ATS readability metrics, weakness identification, and tailoring recommendations.</li>
+</ul><h3>Feature 5: Week-by-Week Career Roadmap Generator</h3>
+<ul>
+<li>Custom learning path creation matching current candidate skills against target role requirements.</li>
+<li>Hands-on weekly tasks, practical projects, and verification milestones.</li>
+</ul><hr/><h2>5. Expected Outcomes & User Experience</h2><p>Candidates experience a responsive web application featuring dark-mode aesthetic styling, micro-animations, and real-time streaming feedback.<ul>
+<li><strong>5x Faster Interview Preparation:</strong> Instant, repeatable practice sessions.</li>
+<li><strong>Measurable ATS Resume Score Improvements:</strong> Clear formatting and keyword guidance.</li>
+<li><strong>Actionable Learning Pathways:</strong> Structured weekly tasks eliminate career pivot ambiguity.</li>
+</ul>
+
+</body>
+</html>

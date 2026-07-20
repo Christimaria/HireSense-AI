@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Report - HireSense AI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    @page {
+      size: A4;
+      margin: 18mm 15mm 18mm 15mm;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1e293b;
+      line-height: 1.6;
+      font-size: 12.5px;
+      padding: 0;
+      background: #ffffff;
+    }
+    
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 2.5px solid #2563eb;
+      padding-bottom: 8px;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    
+    h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 5px;
+      margin-top: 22px;
+      margin-bottom: 12px;
+      page-break-after: avoid;
+    }
+    
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      page-break-after: avoid;
+    }
+
+    h4 {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      page-break-after: avoid;
+    }
+    
+    p {
+      margin-bottom: 10px;
+    }
+    
+    strong {
+      color: #0f172a;
+    }
+    
+    .callout {
+      background-color: #f0f9ff;
+      border-left: 4px solid #0284c7;
+      padding: 10px 14px;
+      margin: 12px 0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #0369a1;
+    }
+
+    .callout p {
+      margin: 0;
+      padding: 2px 0;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background-color: #f1f5f9;
+      color: #1d4ed8;
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .code-container {
+      margin: 12px 0;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      page-break-inside: avoid;
+    }
+
+    .code-lang {
+      background-color: #1e293b;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 4px 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #334155;
+    }
+
+    pre {
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 12px 14px;
+      margin: 0;
+      overflow-x: auto;
+    }
+    
+    pre code {
+      background-color: transparent;
+      color: #f8fafc;
+      padding: 0;
+      border: none;
+      font-size: 10.5px;
+      line-height: 1.5;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 11.5px;
+      page-break-inside: avoid;
+    }
+    
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    
+    th {
+      background-color: #f1f5f9;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    
+    hr {
+      border: 0;
+      height: 1px;
+      background: #cbd5e1;
+      margin: 18px 0;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    ul, ol {
+      padding-left: 18px;
+      margin-bottom: 10px;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Project Report: Building & Deploying HireSense AI</h1><blockquote class="callout"><strong>Vibe Coding Masterclass Series — Capstone Project Report</strong>  </blockquote>
+<blockquote class="callout"><strong>Project Title:</strong> HireSense AI — Intelligent Career Readiness & Interview Co-Pilot  </blockquote>
+<blockquote class="callout"><strong>Live Application URL:</strong> https://hiresense-ai.vercel.app  </blockquote>
+<blockquote class="callout"><strong>Backend API URL:</strong> https://hiresense-ai-backend-ndq3.onrender.com/api/v1  </blockquote>
+<blockquote class="callout"><strong>Repository:</strong> https://github.com/Christimaria/HireSense-AI  </blockquote><hr/><h2>1. Executive Summary & Tech Stack Specifications</h2><p>HireSense AI is a full-stack, AI-native career preparation platform designed to help job seekers practice interviews, calibrate resumes for ATS compatibility, and follow custom week-by-week learning roadmaps.<div class="code-container"><div class="code-lang">code</div><pre><code>┌──────────────────────────────────────────────────────────────────┐
+│                      HIRESENSE AI ARCHITECTURE                   │
+└──────────────────────────────────────────────────────────────────┘
+[ React 19 + Vite 8 UI ]  ◄── SSE Stream ──►  [ FastAPI Python Backend ]
+(Vercel Deployed)                             (Render Container)
+│
+Google GenAI SDK (v2.12.1)
+│
+▼
+[ Google Gemini API ]
+(gemini-1.5-flash)</code></pre></div><h3>1.1 Technical Stack Specifications</h3><table><thead><tr><th>Component Layer</th><th>Technology</th><th>Primary Role & Responsibility</th></tr></thead><tbody><tr><td><strong>Frontend Framework</strong></td><td>React 19, Vite 8, React Router v7</td><td>Responsive UI, state management, SSE chunk parsing</td></tr><tr><td><strong>Styling & UI Components</strong></td><td>Tailwind CSS v3, Lucide React</td><td>Glassmorphic dark mode, micro-animations, accessible design tokens</td></tr><tr><td><strong>Backend Framework</strong></td><td>Python 3.11, FastAPI, Pydantic v2</td><td>API routing, input validation, CORS middleware, SSE streaming</td></tr><tr><td><strong>AI Integration SDK</strong></td><td><code>google-genai</code> (v2.12.1 SDK)</td><td>Communication with Gemini API via <code>generate_content_stream</code></td></tr><tr><td><strong>LLM Model</strong></td><td>Google Gemini <code>gemini-1.5-flash</code></td><td>Multimodal text & JSON generation, structured evaluation</td></tr><tr><td><strong>Containerization</strong></td><td>Docker, Docker Compose</td><td>Multistage Docker build for backend container deployment</td></tr><tr><td><strong>Cloud Deployment</strong></td><td>Vercel (Frontend), Render (Backend)</td><td>Global static hosting & cloud web service container hosting</td></tr></tbody></table><hr/><h2>2. Prompting Strategy & Prompt Engineering Documentation</h2><p>HireSense AI implements <strong>Role-Task-Constraint (RTC)</strong> and <strong>Structured JSON Schema Output</strong> prompting patterns across 5 core AI features.<hr/><h3>Feature 1: Mock Interview Question Generator (<code>interview_prompts.py</code>)</h3><h4>System Prompt (<code>INTERVIEW_SYSTEM_PROMPT</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>INTERVIEW_SYSTEM_PROMPT = """You are a professional technical interviewer at a top technology company.
+Your job is to conduct realistic, challenging, and fair mock interviews.<p>RULES:
+<ul>
+<li>Ask ONE question at a time. Never ask multiple questions in a single response.</li>
+<li>Questions must be relevant to the role, experience level, and interview type.</li>
+<li>Do NOT repeat questions that have already been asked in this session.</li>
+<li>Progress naturally: start easier, build complexity as the session continues.</li>
+<li>For behavioral questions, set up scenarios clearly.</li>
+<li>For technical questions, be specific — avoid vague or generic questions.</li>
+<li>Return ONLY the question text. No greetings, no prefixes like "Question 3:", no explanations.</li>
+</ul>
+"""</code></pre></div><h4>User Prompt Template Builder (<code>build_question_prompt</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>def build_question_prompt(
+role: str,
+experience_level: str,
+interview_type: str,
+question_number: int,
+total_questions: int,
+conversation_history: list[dict],
+) -&gt; str:
+role_ctx = ROLE_CONTEXT.get(role, role)
+type_ctx = INTERVIEW_TYPE_CONTEXT.get(interview_type, "")
+exp_ctx = EXPERIENCE_CONTEXT.get(experience_level, experience_level)<p>history_text = ""
+if conversation_history:
+history_lines = []
+for turn in conversation_history:
+history_lines.append(f"Q: {turn['question']}")
+history_lines.append(f"A: {turn['answer'][:300]}...")
+history_text = "\n".join(history_lines)<p>return f"""
+Interview Configuration:
+<ul>
+<li>Role: {role}</li>
+<li>Experience Level: {experience_level} ({exp_ctx})</li>
+<li>Interview Type: {interview_type}</li>
+<li>Question: {question_number} of {total_questions}</li>
+<li>Key Topics: {role_ctx}</li>
+<li>Style Guidance: {type_ctx}</li>
+</ul><p>{"Previous conversation history:" if history_text else "This is the FIRST question of the session."}
+{history_text}<p>Now generate question #{question_number}. Return ONLY the question text.
+"""</code></pre></div><hr/><h3>Feature 2: Candidate Answer Evaluation & Grading (<code>evaluation_prompts.py</code>)</h3><h4>System Prompt (<code>EVALUATION_SYSTEM_PROMPT</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>EVALUATION_SYSTEM_PROMPT = """\
+You are an expert technical recruiter, senior engineering manager, and career coach with 15+ years of experience.
+Your task is to review a candidate's answer to an interview question, grade it constructively and strictly, and provide actionable advice.<p>RULES:
+<ul>
+<li>Be realistic and fair. Do not inflate scores.</li>
+<li>High scores (8.5+) require technical accuracy, clarity, and context-appropriate detail.</li>
+<li>Low scores (&lt;5.0) are appropriate for major technical gaps, misunderstandings, or excessive vagueness.</li>
+<li>Grading must scale according to the candidate's Experience Level.</li>
+<li>Return ONLY a single JSON object matching the requested schema.</li>
+</ul>
+"""</code></pre></div><h4>User Prompt Template Builder (<code>build_evaluation_prompt</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>def build_evaluation_prompt(question, answer, role, experience_level, interview_type) -&gt; str:
+return f"""\
+Interview Context:
+<ul>
+<li>Role: {role} | Experience Level: {experience_level} | Interview Type: {interview_type}</li>
+</ul><p>Question Asked:
+"{question}"<p>Candidate's Answer:
+"{answer}"<p>Evaluate the candidate's answer and return exactly this JSON structure:
+{{
+"score": &lt;float between 0.0 and 10.0 representing the quality of the answer&gt;,
+"strengths": ["&lt;strength 1&gt;", "&lt;strength 2&gt;", "&lt;strength 3&gt;"],
+"weaknesses": ["&lt;weakness 1&gt;", "&lt;weakness 2&gt;", "&lt;weakness 3&gt;"],
+"improved_answer": "&lt;a model answer tailored to the role and experience level&gt;",
+"tips": ["&lt;tip 1&gt;", "&lt;tip 2&gt;", "&lt;tip 3&gt;"]
+}}<p>Return ONLY the JSON object. No markdown fences, no extra text.
+"""</code></pre></div><hr/><h3>Feature 3: Resume ATS Scanner & Reviewer (<code>resume_prompts.py</code>)</h3><h4>System Prompt (<code>RESUME_SYSTEM_PROMPT</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>RESUME_SYSTEM_PROMPT = """\
+You are an expert technical recruiter and career coach with 15+ years of experience reviewing resumes for top tech companies.
+Your task is to analyse resumes and return structured, honest, actionable feedback.<p>RULES:
+<ul>
+<li>Be candid but constructive. Do not inflate scores.</li>
+<li>Scores use a 0–10 float scale.</li>
+<li>ats_score is an integer 0–100 measuring ATS keyword/format compatibility.</li>
+<li>Keep per-section feedback concise (2–3 sentences).</li>
+<li>Return ONLY a single JSON object.</li>
+</ul>
+"""</code></pre></div><h4>User Prompt Template Builder (<code>build_resume_review_prompt</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>def build_resume_review_prompt(resume_text: str, target_role: str | None) -&gt; str:
+return f"""\
+Target Role: {target_role or "General Merit"}<p>Analyse the resume below and return exactly this JSON structure:<p>{{
+"overall_score": &lt;float 0-10&gt;,
+"ats_score": &lt;int 0-100&gt;,
+"sections": {{
+"summary":    {{"score": &lt;float&gt;, "feedback": "&lt;string&gt;"}},
+"experience": {{"score": &lt;float&gt;, "feedback": "&lt;string&gt;"}},
+"skills":     {{"score": &lt;float&gt;, "feedback": "&lt;string&gt;"}},
+"education":  {{"score": &lt;float&gt;, "feedback": "&lt;string&gt;"}}
+}},
+"strengths":       ["&lt;string&gt;", ...],
+"weaknesses":      ["&lt;string&gt;", ...],
+"recommendations": ["&lt;string&gt;", ...]
+}}<p>RESUME TEXT:
+{resume_text}<p>Return ONLY the JSON object.
+"""</code></pre></div><hr/><h3>Feature 4: Career Learning Roadmap Generator (<code>roadmap_prompts.py</code>)</h3><h4>System Prompt (<code>ROADMAP_SYSTEM_PROMPT</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>ROADMAP_SYSTEM_PROMPT = """\
+You are an expert career coach and senior technical trainer.
+Analyze a candidate's current skills and target role, identify core skill gaps, and generate a customized week-by-week learning roadmap for the specified timeline.<p>RULES:
+<ul>
+<li>Be highly practical. Focus on project-based learning and hands-on milestones.</li>
+<li>Ensure the roadmap fits the requested timeline.</li>
+<li>Recommend reputable resources (official docs, courses, books).</li>
+<li>Return ONLY a single JSON object matching the requested structure.</li>
+</ul>
+"""</code></pre></div><h4>User Prompt Template Builder (<code>build_roadmap_prompt</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>def build_roadmap_prompt(current_skills: list[str], target_role: str, timeline: str) -&gt; str:
+skills_list = ", ".join(current_skills)
+return f"""\
+Candidate Context:
+<ul>
+<li>Current Skills: {skills_list}</li>
+<li>Target Role: {target_role}</li>
+<li>Timeline: {timeline}</li>
+</ul><p>Generate a detailed, week-by-week roadmap to bridge these skill gaps within the {timeline} timeframe.
+Return ONLY the JSON object.
+"""</code></pre></div><hr/><h3>Feature 5: Holistic Performance Dashboard (<code>dashboard_prompts.py</code>)</h3><h4>System Prompt (<code>DASHBOARD_SYSTEM_PROMPT</code>)</h4>
+<div class="code-container"><div class="code-lang">python</div><pre><code>DASHBOARD_SYSTEM_PROMPT = """\
+You are an elite executive recruiter and technical interviewer with 15+ years of experience conducting performance assessments.
+Your task is to analyze an entire mock interview transcript and produce a detailed, honest, structured performance dashboard.<p>RULES:
+<ul>
+<li>Evaluate the candidate holistically across Technical Depth, Communication Clarity, Problem Solving, and Context Relevance.</li>
+<li>Provide a grade (e.g. A, B+, B, C-, F) matching typical industry standards.</li>
+<li>Return ONLY a single JSON object matching the requested structure.</li>
+</ul>
+"""</code></pre></div><hr/><h2>3. Phase-by-Phase Development Summary (Vibe Coding Methodology)</h2><h3>Phase 1: Architecture & API Schema Definition</h3>
+<ul>
+<li>Specified 5 core feature endpoints (<code>/interview/question</code>, <code>/evaluation/answer</code>, <code>/evaluation/dashboard</code>, <code>/resume/review</code>, <code>/roadmap/generate</code>).</li>
+<li>Created Pydantic models for request validation and response typing.</li>
+</ul><h3>Phase 2: Backend Core & Gemini Integration</h3>
+<ul>
+<li>Implemented FastAPI application factory in <code>app/main.py</code>.</li>
+<li>Configured <code>google-genai</code> SDK with async streaming generators in <code>app/ai/client.py</code>.</li>
+<li>Built custom Server-Sent Events (SSE) helpers (<code>stream_text_chunks</code> and <code>stream_json_object</code>) in <code>app/utils/sse.py</code>.</li>
+</ul><h3>Phase 3: Frontend Interface & SSE Stream Reader</h3>
+<ul>
+<li>Designed responsive glassmorphic UI using React 19 and Tailwind CSS.</li>
+<li>Developed <code>streamPost</code> helper utilizing browser <code>fetch</code> and <code>TextDecoder</code> streams to render progressive typing animations.</li>
+</ul><h3>Phase 4: Containerization</h3>
+<ul>
+<li>Authored multi-stage <code>Dockerfile</code> with Python 3.11 slim base image.</li>
+<li>Configured dependency caching and Uvicorn production entrypoint.</li>
+</ul><h3>Phase 5: Deployment & Verification Audit</h3>
+<ul>
+<li>Deployed FastAPI backend container to Render.</li>
+<li>Deployed React static bundle to Vercel.</li>
+<li>Resolved CORS, API URL normalization, and Gemini model fallback routing.</li>
+</ul><hr/><h2>4. Technical Challenges & Resolutions</h2><h3>Challenge 1: Gemini Model Availability & Fallback Routing</h3>
+<ul>
+<li><strong>Issue:</strong> Requesting restricted or deprecated model names returned <code>404 NOT_FOUND: model is no longer available</code>.</li>
+<li><strong>Resolution:</strong> Configured application default to <code>gemini-1.5-flash</code> and added automatic fallback handling in <code>client.py</code> to seamlessly retry with <code>gemini-1.5-flash</code> if any model returns 404.</li>
+</ul><h3>Challenge 2: Vite Build-Time Environment Variable Baking</h3>
+<ul>
+<li><strong>Issue:</strong> Updating <code>VITE_API_URL</code> on Vercel did not take effect immediately due to build-time bundle compilation.</li>
+<li><strong>Resolution:</strong> Implemented <code>getNormalizedApiBaseUrl()</code> in <code>api.js</code> to handle trailing slashes and missing <code>/api/v1</code> suffixes, followed by a cache-cleared Vercel redeployment.</li>
+</ul><h3>Challenge 3: JSON Decoding Corruption in SSE Streams</h3>
+<ul>
+<li><strong>Issue:</strong> Python <code>str.strip("</code>`<code>json")</code> character-stripped valid trailing letters (<code>j</code>, <code>s</code>, <code>o</code>, <code>n</code>) from JSON strings, causing parse errors.</li>
+<li><strong>Resolution:</strong> Refactored <code>sse.py</code> with <code>_clean_json_text()</code> using index-based newline slicing for markdown code fences.</li>
+</ul><hr/><h2>5. Key Learnings & Reflection</h2><p>1. <strong>Vibe Coding Acceleration:</strong> Pairing with AI tools enabled full-stack development, prompt engineering, and cloud deployment in record time.
+2. <strong>Streaming User Experience:</strong> Progressive SSE token rendering provides superior user engagement compared to slow, blocking HTTP requests.
+3. <strong>Decoupled Architecture Benefits:</strong> Separating React on Vercel from FastAPI on Render ensured complete API key protection while keeping the system modular and scalable.
+
+</body>
+</html>
