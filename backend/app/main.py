@@ -33,8 +33,9 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle hooks."""
     settings = get_settings()
     logger.info(
-        "HireSense AI starting | env=%s",
+        "HireSense AI starting | env=%s | resolved_gemini_model=%s",
         settings.environment,
+        settings.gemini_model,
     )
     yield
     logger.info("HireSense AI shutting down.")

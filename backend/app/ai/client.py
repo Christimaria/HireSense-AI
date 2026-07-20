@@ -80,6 +80,29 @@ def _json_config(system_prompt: str, temperature: float, max_tokens: int) -> typ
     )
 
 
+def _log_available_models_on_error(target_model: str, exc: Exception) -> None:
+    """Helper to query and log all available models when a Gemini API call fails."""
+    try:
+        client = _get_client()
+        models = [
+            (m.name[7:] if getattr(m, "name", "").startswith("models/") else getattr(m, "name", str(m)))
+            for m in client.models.list()
+        ]
+        logger.error(
+            "Gemini request failed for model %r: %s | COMPLETE LIST OF AVAILABLE MODELS FOR YOUR API KEY: %s",
+            target_model,
+            exc,
+            models,
+        )
+    except Exception as list_exc:
+        logger.error(
+            "Gemini request failed for model %r: %s | (Failed to fetch available models list: %s)",
+            target_model,
+            exc,
+            list_exc,
+        )
+
+
 # ── Public streaming functions ────────────────────────────────────────────────
 async def stream_text(
     system_prompt: str,
@@ -110,7 +133,7 @@ async def stream_text(
 
         except Exception as exc:
             if attempt == _MAX_RETRIES or not _is_retryable(exc):
-                logger.error("stream_text failed (attempt %d): %s", attempt, exc)
+                _log_available_models_on_error(target_model, exc)
                 raise
             wait = 2 ** attempt
             logger.warning(
@@ -150,7 +173,7 @@ async def stream_json(
 
         except Exception as exc:
             if attempt == _MAX_RETRIES or not _is_retryable(exc):
-                logger.error("stream_json failed (attempt %d): %s", attempt, exc)
+                _log_available_models_on_error(target_model, exc)
                 raise
             wait = 2 ** attempt
             logger.warning(
@@ -176,9 +199,13 @@ async def complete(
     target_model = model or settings.gemini_model
     config = _json_config(system_prompt, temperature, max_tokens)
 
-    response = await client.aio.models.generate_content(
-        model=target_model,
-        contents=user_prompt,
-        config=config,
-    )
-    return response.text or ""
+    try:
+        response = await client.aio.models.generate_content(
+            model=target_model,
+            contents=user_prompt,
+            config=config,
+        )
+        return response.text or ""
+    except Exception as exc:
+        _log_available_models_on_error(target_model, exc)
+        raise

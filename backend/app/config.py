@@ -15,22 +15,18 @@ class Settings(BaseSettings):
     # ── Google AI / Gemini ────────────────────────────────────────────────────
     gemini_api_key: str = Field(..., description="Google AI Studio API key")
     gemini_model: str = Field(
-        default="gemini-2.5-flash-lite",
-        description="Gemini model name (e.g. gemini-2.5-flash-lite, gemini-2.5-flash, gemini-2.5-pro)",
+        default="gemini-1.5-flash",
+        description="Gemini model name (e.g. gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash)",
     )
 
     @field_validator("gemini_model", mode="before")
     @classmethod
     def sanitize_gemini_model(cls, v: str | None) -> str:
         if not v or not isinstance(v, str):
-            return "gemini-2.5-flash-lite"
+            return "gemini-1.5-flash"
         val = v.strip()
         if val.startswith("models/"):
             val = val[7:]
-        # Automatically fallback invalid or deprecated model strings from legacy env vars
-        invalid_models = {"gemini-2.5-flash", "gemini-3.5-flash", "gemini-2.0-flash", "gemini-1.0-pro"}
-        if val.lower() in invalid_models:
-            return "gemini-2.5-flash-lite"
         return val
 
     # ── Server ────────────────────────────────────────────────────────────────
