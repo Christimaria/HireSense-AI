@@ -86,6 +86,7 @@ async def stream_text(
     user_prompt: str,
     temperature: float = 0.7,
     max_tokens: int = 1024,
+    model: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """
     Stream plain-text tokens from Gemini with exponential-back-off retry
@@ -93,12 +94,13 @@ async def stream_text(
     """
     client = _get_client()
     settings = get_settings()
+    target_model = model or settings.gemini_model
     config = _text_config(system_prompt, temperature, max_tokens)
 
     for attempt in range(1, _MAX_RETRIES + 1):
         try:
             async for chunk in await client.aio.models.generate_content_stream(
-                model=settings.gemini_model,
+                model=target_model,
                 contents=user_prompt,
                 config=config,
             ):
@@ -123,6 +125,7 @@ async def stream_json(
     user_prompt: str,
     temperature: float = 0.3,
     max_tokens: int = 2048,
+    model: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """
     Stream JSON tokens from Gemini.
@@ -131,12 +134,13 @@ async def stream_json(
     """
     client = _get_client()
     settings = get_settings()
+    target_model = model or settings.gemini_model
     config = _json_config(system_prompt, temperature, max_tokens)
 
     for attempt in range(1, _MAX_RETRIES + 1):
         try:
             async for chunk in await client.aio.models.generate_content_stream(
-                model=settings.gemini_model,
+                model=target_model,
                 contents=user_prompt,
                 config=config,
             ):
@@ -161,6 +165,7 @@ async def complete(
     user_prompt: str,
     temperature: float = 0.3,
     max_tokens: int = 2048,
+    model: str | None = None,
 ) -> str:
     """
     Non-streaming single-shot JSON completion.
@@ -168,10 +173,11 @@ async def complete(
     """
     client = _get_client()
     settings = get_settings()
+    target_model = model or settings.gemini_model
     config = _json_config(system_prompt, temperature, max_tokens)
 
     response = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+        model=target_model,
         contents=user_prompt,
         config=config,
     )

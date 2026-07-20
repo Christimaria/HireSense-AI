@@ -17,7 +17,7 @@ HireSense AI is a next-generation career readiness co-pilot powered by Google Ge
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
 | `GEMINI_API_KEY` | *(Required)* | Google AI Studio API Key. |
-| `GEMINI_MODEL` | `gemini-3.5-flash` | The Gemini model to query (e.g. `gemini-3.5-flash` or `gemini-3.5-pro`). |
+| `GEMINI_MODEL` | `gemini-2.5-flash-lite` | The Gemini model to query (e.g. `gemini-2.5-flash-lite` or `gemini-2.5-pro`). |
 | `ENVIRONMENT` | `development` | Run state (`development` or `production`). |
 | `PORT` | `8000` | Port for the FastAPI server to listen on. |
 | `ALLOWED_ORIGINS` | `http://localhost:3000,http://localhost:5173` | Comma-separated list of CORS-approved origin URLs. |
@@ -116,7 +116,7 @@ You can host both services for free on [Render](https://render.com/).
    * **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 4. Add the following **Environment Variables**:
    * `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
-   * `GEMINI_MODEL`: `gemini-3.5-flash`
+   * `GEMINI_MODEL`: `gemini-2.5-flash-lite`
    * `ENVIRONMENT`: `production`
    * `ALLOWED_ORIGINS`: `https://your-frontend-domain.onrender.com` *(Replace with your deployed frontend URL once created)*
 5. Click **Deploy Web Service**.
