@@ -6,18 +6,12 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install system dependencies if any are needed
-# (Using python urllib.request for healthcheck, so no curl/wget needed)
-
-# Copy and install python dependencies
-COPY requirements.txt /app/
+# Copy and install dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY . /app/
+# Copy application
+COPY . .
 
-# Expose port
-EXPOSE 8000
-
-# Run FastAPI app with uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Render provides the PORT environment variable
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
